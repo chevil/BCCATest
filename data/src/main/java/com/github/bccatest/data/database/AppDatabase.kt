@@ -7,7 +7,7 @@ import com.github.bccatest.data.model.AlbumEntity
 
 @Database(
     entities = [AlbumEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

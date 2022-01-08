@@ -11,6 +11,7 @@ import com.github.bccatest.base.BaseActivity
 import com.github.bccatest.databinding.ActivityMainBinding
 import com.github.bccatest.viewmodel.AlbumViewModel
 import com.github.bccatest.ui.albums.AlbumListAdapter
+import com.github.bccatest.utils.Constants
 import com.github.bccatest.data.model.AlbumEntity
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import android.view.inputmethod.InputMethodManager
@@ -26,7 +27,6 @@ class MainActivity : BaseActivity<ActivityMainBinding, AlbumViewModel>() {
 
     override fun initVariable() {
         binding.viewModel = viewModel
-        binding.isLiveData = viewModel.isLiveData
     }
 
     override fun initView() {
@@ -35,13 +35,26 @@ class MainActivity : BaseActivity<ActivityMainBinding, AlbumViewModel>() {
             this,
             LinearLayoutManager.VERTICAL, false
         )
-        albumListAdapter = AlbumListAdapter()
+        albumListAdapter = AlbumListAdapter() { position -> albumClickListener( position ) }
         binding.apply {
             albumList.apply {
                 setHasFixedSize(true)
                 this.layoutManager = layoutManager
                 adapter = albumListAdapter
             }
+        }
+    }
+
+    /**
+     * Recyclerview click listener
+     */
+    fun albumClickListener(position: Int) : Unit {
+        if ( position >=0 && position < viewModel.albumListSeeable.value.size ) {
+           Log.v( Constants.LOGTAG, "Album clicked : ${viewModel.albumListSeeable.value[position].title}" )
+           var inputPopupWindow : AlbumPopupWindow = AlbumPopupWindow(this, viewModel.albumListSeeable.value[position] )
+           inputPopupWindow.showPopupFromScreenCenter(R.layout.activity_main)
+        } else {
+           Log.v( Constants.LOGTAG, "Album clicked out of range!!" )
         }
     }
 
@@ -81,7 +94,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, AlbumViewModel>() {
                 albumListAdapter?.setItems(it)
                 binding.apply {
                    albumCount.setText(""+it.size)
-                   binding.isLiveData = viewModel!!.isLive()
+                   binding.viewModel = viewModel
                 }
             }
         }

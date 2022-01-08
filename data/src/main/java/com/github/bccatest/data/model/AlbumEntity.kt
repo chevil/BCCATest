@@ -9,7 +9,7 @@ import com.google.gson.annotations.SerializedName
 data class AlbumEntity (
 
     // primary auto-increment id
-    @PrimaryKey(autoGenerate = true)
+    @PrimaryKey(autoGenerate = false)
     @SerializedName("id")
     val id: Long?,
 

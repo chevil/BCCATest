@@ -13,6 +13,7 @@ import android.net.Uri
 import java.net.URLEncoder
 import androidx.recyclerview.widget.RecyclerView
 import com.github.bccatest.R
+import com.github.bccatest.utils.Constants
 import com.github.bccatest.data.model.AlbumEntity
 import com.github.bccatest.AlbumApplication
 import com.bumptech.glide.Glide
@@ -24,7 +25,8 @@ import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import android.webkit.WebSettings 
 
-class AlbumListAdapter: RecyclerView.Adapter<AlbumListAdapter.AlbumListViewHolder>() {
+class AlbumListAdapter( val clickListener: (Int) -> Unit ) : 
+      RecyclerView.Adapter<AlbumListAdapter.AlbumListViewHolder>() {
 
     lateinit var mContext: Context
     lateinit var itemView: View
@@ -48,6 +50,7 @@ class AlbumListAdapter: RecyclerView.Adapter<AlbumListAdapter.AlbumListViewHolde
         position: Int
     ) {
         holder.bind(items[position])
+        holder.itemView.setOnClickListener { clickListener(position) }
     }
 
     override fun getItemCount(): Int {
@@ -73,7 +76,7 @@ class AlbumListAdapter: RecyclerView.Adapter<AlbumListAdapter.AlbumListViewHolde
             val glideUrl : GlideUrl = GlideUrl(item.thumbnail, LazyHeaders.Builder()
                     .addHeader("User-Agent", WebSettings.getDefaultUserAgent(AlbumApplication.applicationContext()))
                     .build());
-            Log.v( "Album list", "loading : <${glideUrl}>" )
+            Log.v( Constants.LOGTAG, "loading : <${glideUrl}>" )
             Glide.with(AlbumApplication.applicationContext())
                  .load(glideUrl)
                  .error(R.drawable.app_icon)
@@ -84,7 +87,7 @@ class AlbumListAdapter: RecyclerView.Adapter<AlbumListAdapter.AlbumListViewHolde
                                     target: Target<Drawable>?,
                                     isFirstResource: Boolean
                                ): Boolean {
-                                    Log.v( "Album list", "loading failed : ${e}" )
+                                    Log.v( Constants.LOGTAG, "loading failed : ${e}" )
                                     return true
                                }
 

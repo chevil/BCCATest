@@ -10,15 +10,13 @@
         <variable
             name="viewModel"
             type="com.github.bccatest.viewmodel.AlbumViewModel" />
-        <variable
-            name="isLiveData"
-            type="int" />
     </data>
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_margin="20dp"
+        android:id="@+id/main"
         tools:context=".ui.main.MainActivity">
 
         <TextView
@@ -32,9 +30,9 @@
             android:textSize="14dp"
             android:textStyle="bold"
             android:textColor="@color/white"
-            android:visibility="@{(isLiveData >= 0) ? View.VISIBLE : View.GONE }"
-            android:text="@{(isLiveData >= 1) ? R.string.live : R.string.cached}"
-            android:background="@{(isLiveData >= 1 ) ? @color/green : @color/orange}"
+            android:visibility="@{(viewModel.isLive() >= 0) ? View.VISIBLE : View.GONE }"
+            android:text="@{(viewModel.isLive() >= 1) ? R.string.live : R.string.cached}"
+            android:background="@{(viewModel.isLive() >= 1 ) ? @color/green : @color/orange}"
             />
 
         <com.google.android.material.textfield.TextInputLayout
@@ -97,4 +95,5 @@
         </ScrollView>
 
     </RelativeLayout>
+
 </layout>

@@ -11,7 +11,6 @@ import com.github.bccatest.domain.usecase.album.GetAllAlbumsUseCase
 import com.github.bccatest.domain.usecase.album.GetSearchAlbumsUseCase
 import com.github.bccatest.domain.usecase.album.InsertAlbumUseCase
 import com.github.bccatest.domain.usecase.album.DeleteAllAlbumsUseCase
-import com.github.bccatest.utils.Util
 import com.github.bccatest.utils.Constants
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -71,12 +70,12 @@ class AlbumViewModel(
           insertAlbumUseCase.execute(album)
               .subscribeOn(Schedulers.io())
               .observeOn(Schedulers.io())
-               .doFinally { mBusy = false }
+              .doFinally { mBusy = false }
               .subscribe({ it ->
                   Log.v( Constants.LOGTAG, "inserted : ${it}" )
                }, 
                {
-                  Util.showNotification("error: ${it.message}", "error")
+                  Log.v( Constants.LOGTAG, "insertion error : ${it}" )
                })
       }
     }
@@ -85,8 +84,14 @@ class AlbumViewModel(
     fun insertAllAlbums(albums: List<AlbumEntity>) {
         albums.forEach { album ->
            Log.v( Constants.LOGTAG, "inserting : ${album.title}" )
+           // waiting for previous insertion to finish
+           // to avoid OutOfMemory error
            do {
-              Thread.sleep(1)
+              try {
+                Thread.sleep(1)
+              } catch ( e : InterruptedException ) {
+                Log.v( Constants.LOGTAG, "sleep interrupted" )
+              }
            } while ( mBusy )
            insertAlbum(album)
         }
@@ -114,8 +119,6 @@ class AlbumViewModel(
                 .observeOn(Schedulers.io())
                 .subscribe({
                     Log.v( Constants.LOGTAG, "Deleted all albums" );
-                    // Save all albums in the database
-                    insertAllAlbums(albumListObservable.value)
                 }, {
                 })
         )
@@ -140,9 +143,8 @@ class AlbumViewModel(
                       isLiveData = 1
                       // now, the list is shown 
                       // we can update the database with co-routines
-                      // Delete all albums
-                      // Albums will be recreated when delete is done
-                      deleteAllAlbums()
+                      // Albums are created or updated because on the OnConflictStrategy.REPLACE
+                      insertAllAlbums(albumListObservable.value)
                    }
                  }, {})
         )
@@ -160,9 +162,7 @@ class AlbumViewModel(
                     albumListSeeable.value = it
                 }, 
                 {
-                    if (it.message != "No data") {
-                        Util.showNotification("error: ${it.message}", "error")
-                    }
+                    Log.v( Constants.LOGTAG, "No results" )
                 })
         )
     }
