@@ -17,12 +17,14 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 import android.util.Log
+import android.content.Context
 
 class AlbumViewModel(
     private val fetchAllAlbumsUseCase: FetchAllAlbumsUseCase,
@@ -34,9 +36,18 @@ class AlbumViewModel(
 
     val albumListObservable: MutableStateFlow<List<AlbumEntity>> = MutableStateFlow(ArrayList())
     val albumListSeeable: MutableStateFlow<List<AlbumEntity>> = MutableStateFlow(ArrayList())
+    var mContext : Context
+    var mBusy : Boolean = false
+    var isLiveData : Int = -1
 
     init {
+        mContext = AlbumApplication.applicationContext()
         fetchAllAlbums()
+    }
+
+    // indicates if data is live or cached
+    fun isLive() : Int {
+        return isLiveData
     }
 
     // filter albums
@@ -51,34 +62,33 @@ class AlbumViewModel(
         }
         Log.v( Constants.LOGTAG, "Filtered ${fList.size} items" )
         albumListSeeable.value = fList
-        CoroutineScope(Dispatchers.IO).launch {
-            albumListSeeable.emit(fList)
-        }
     }
 
     // insert an album in the database
     fun insertAlbum(album: AlbumEntity) {
-        CoroutineScope(Dispatchers.IO).launch {
-            addDisposable(
-                insertAlbumUseCase.execute(album)
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(Schedulers.io())
-                    .subscribe({ it ->
-                        Log.v( Constants.LOGTAG, "inserted : ${it}" )
-                    }, 
-                    {
-                        Util.showNotification("error: ${it.message}", "error")
-                    })
-            )
-        }
+      mBusy = true
+      runBlocking {
+          insertAlbumUseCase.execute(album)
+              .subscribeOn(Schedulers.io())
+              .observeOn(Schedulers.io())
+               .doFinally { mBusy = false }
+              .subscribe({ it ->
+                  Log.v( Constants.LOGTAG, "inserted : ${it}" )
+               }, 
+               {
+                  Util.showNotification("error: ${it.message}", "error")
+               })
+      }
     }
 
     // insert all albums from a list in the database
     fun insertAllAlbums(albums: List<AlbumEntity>) {
         albums.forEach { album ->
            Log.v( Constants.LOGTAG, "inserting : ${album.title}" )
+           do {
+              Thread.sleep(1)
+           } while ( mBusy )
            insertAlbum(album)
-           Thread.sleep(5)
         }
     }
 
@@ -123,8 +133,11 @@ class AlbumViewModel(
                    albumListSeeable.value = it
                    // when reading from network fails, read from the local database
                    Log.v( Constants.LOGTAG, "Fetch returned : ${albumListObservable.value.size}" )
-                   if ( albumListObservable.value.size <= 0 ) getAllAlbums()
-                   else {
+                   if ( albumListObservable.value.size <= 0 )  {
+                      isLiveData = 0
+                      getAllAlbums()
+                   } else {
+                      isLiveData = 1
                       // now, the list is shown 
                       // we can update the database with co-routines
                       // Delete all albums

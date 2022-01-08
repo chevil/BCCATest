@@ -11,10 +11,10 @@ interface AlbumDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAlbum(album: AlbumEntity): Single<Long>
 
-    @Query("SELECT * FROM albums ORDER BY id DESC")
+    @Query("SELECT * FROM albums ORDER BY id")
     fun getAllAlbums(): Flowable<List<AlbumEntity>>
 
-    @Query("SELECT * FROM albums WHERE title LIKE :search ORDER BY id DESC")
+    @Query("SELECT * FROM albums WHERE title LIKE :search ORDER BY id")
     fun getAlbumsByContent(search: String): Single<List<AlbumEntity>>
 
     @Query("DELETE FROM albums")

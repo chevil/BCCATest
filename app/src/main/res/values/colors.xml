@@ -2,6 +2,9 @@
 <resources>
     <color name="transparent">#00000000</color>
     <color name="foreground">#4532ef</color>
-    <color name="middleground">#ed6731</color>
+    <color name="middleground">#ffefd5</color>
     <color name="background">#98dd41</color>
+    <color name="green">#00aa00</color>
+    <color name="orange">#ee9900</color>
+    <color name="white">#ffffff</color>
 </resources>

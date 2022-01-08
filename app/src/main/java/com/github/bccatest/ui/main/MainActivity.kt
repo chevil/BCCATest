@@ -26,6 +26,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, AlbumViewModel>() {
 
     override fun initVariable() {
         binding.viewModel = viewModel
+        binding.isLiveData = viewModel.isLiveData
     }
 
     override fun initView() {
@@ -80,6 +81,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, AlbumViewModel>() {
                 albumListAdapter?.setItems(it)
                 binding.apply {
                    albumCount.setText(""+it.size)
+                   binding.isLiveData = viewModel!!.isLive()
                 }
             }
         }
