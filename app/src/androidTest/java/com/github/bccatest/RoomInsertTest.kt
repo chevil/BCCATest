@@ -46,8 +46,7 @@ class RoomInsertTest {
     @Before
     fun init() {
         Log.v( Constants.LOGTAG, "Opening room database..." )
-        db = Room.databaseBuilder(ApplicationProvider.getApplicationContext(),
-                AppDatabase::class.java, "test")
+        db = Room.inMemoryDatabaseBuilder(ApplicationProvider.getApplicationContext(), AppDatabase::class.java)
                 .allowMainThreadQueries() 
                 .build()
         Log.v( Constants.LOGTAG, "Opened room database..." )
@@ -72,7 +71,7 @@ class RoomInsertTest {
         Log.v( Constants.LOGTAG, "Testing delete all..." )
         mBusy = true
         mExpectedSize = 0
-        db.albumDao().deleteAllAlbums()
+        subscription = db.albumDao().deleteAllAlbums()
                      .subscribeOn(AndroidSchedulers.mainThread())
                      .observeOn(AndroidSchedulers.mainThread())
                      .subscribe(
@@ -81,6 +80,7 @@ class RoomInsertTest {
                             Log.v( Constants.LOGTAG, "Delete all returned : ${result} : expected : ${mExpectedSize}" )
                             assertEquals(mExpectedSize, result)
                             mBusy = false
+                            subscription.dispose()
                         }
                       )
     }
@@ -110,7 +110,7 @@ class RoomInsertTest {
         var result : Long 
 
         mBusy = true
-        db.albumDao().insertAlbum(album)
+        subscription = db.albumDao().insertAlbum(album)
                      .subscribeOn(AndroidSchedulers.mainThread())
                      .observeOn(AndroidSchedulers.mainThread())
                      .subscribe(
@@ -119,6 +119,7 @@ class RoomInsertTest {
                             assertEquals(1, result)
                             Log.v( Constants.LOGTAG, "Insert album returned : ${result}" )
                             mBusy = false
+                            subscription.dispose()
                         }
                       )
     }
@@ -149,7 +150,7 @@ class RoomInsertTest {
         var result : Long
 
         mBusy = true
-        db.albumDao().insertAlbum(album2)
+        subscription = db.albumDao().insertAlbum(album2)
                      .subscribeOn(AndroidSchedulers.mainThread())
                      .observeOn(AndroidSchedulers.mainThread())
                      .subscribe(
@@ -158,6 +159,7 @@ class RoomInsertTest {
                             assertEquals(1, result)
                             Log.v( Constants.LOGTAG, "Update album returned : ${result}" )
                             mBusy = false
+                            subscription.dispose()
                         }
                       )
     }
