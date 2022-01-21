@@ -23,7 +23,6 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 import android.util.Log
-import android.content.Context
 
 class AlbumViewModel(
     private val fetchAllAlbumsUseCase: FetchAllAlbumsUseCase,
@@ -35,12 +34,10 @@ class AlbumViewModel(
 
     val albumListObservable: MutableStateFlow<List<AlbumEntity>> = MutableStateFlow(ArrayList())
     val albumListSeeable: MutableStateFlow<List<AlbumEntity>> = MutableStateFlow(ArrayList())
-    var mContext : Context
     var mBusy : Boolean = false
     var isLiveData : Int = -1
 
     init {
-        mContext = AlbumApplication.applicationContext()
         fetchAllAlbums()
     }
 
